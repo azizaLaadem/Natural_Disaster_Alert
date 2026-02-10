@@ -1,6 +1,9 @@
 # 🌍 Natural disaster alert: Flood & Fire Prediction
 
-An end-to-end data engineering ecosystem designed to ingest multi-source environmental data, perform distributed processing, and deliver real-time predictive analytics.
+The **Natural Disaster Alert System** is an end-to-end **data pipeline and machine learning system** designed to ingest **historical and real-time data**, process it at scale, and generate **real-time flood and fire predictions**.
+
+The system follows a **modern data architecture (Bronze / Silver / Gold)** and provides **real-time dashboards** to support timely decision-making for disaster monitoring and risk prevention.
+
 
 ---
 
