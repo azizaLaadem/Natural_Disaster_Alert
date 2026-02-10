@@ -1,0 +1,23 @@
+# Ignore generated directories
+checkpoints/
+data/
+docker/
+spark-temp/
+storage/
+
+# Spark / streaming files
+*.crc
+*.snappy.parquet
+_spark_metadata/
+*.metadata
+*.part-*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Keep folder structure
+!checkpoints/**/.gitkeep
+!data/**/.gitkeep
+!docker/**/.gitkeep
+!spark-temp/**/.gitkeep
+!storage/**/.gitkeep

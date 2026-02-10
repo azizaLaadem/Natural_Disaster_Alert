@@ -1,0 +1,626 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "🟢 LOW"
+                },
+                "2": {
+                  "color": "yellow",
+                  "index": 1,
+                  "text": "🟡 MODERATE"
+                },
+                "3": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "🟠 HIGH"
+                },
+                "4": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "🔴 CRITICAL"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "orange",
+                "value": 3
+              },
+              {
+                "color": "red",
+                "value": 4
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "alert_level_num"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "1": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "LOW"
+                      },
+                      "2": {
+                        "color": "yellow",
+                        "index": 1,
+                        "text": "MODERATE"
+                      },
+                      "3": {
+                        "color": "orange",
+                        "index": 2,
+                        "text": "HIGH"
+                      },
+                      "4": {
+                        "color": "red",
+                        "index": 3,
+                        "text": "CRITICAL"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "field": "alert_level_num",
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.9,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "field": "alert_level_num",
+                  "fixed": 5,
+                  "max": 30,
+                  "min": 10
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "name": "Alertes",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "coords",
+          "lat": 32,
+          "lon": -6.5,
+          "zoom": 6
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "import \"join\"\n\nlatitude = from(bucket: \"flood_predictions\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"latitude\")\n  |> group(columns: [\"location_id\"])\n  |> last()\n  |> drop(columns: [\"_start\", \"_stop\", \"_time\", \"_measurement\", \"_field\"])\n  |> rename(columns: {_value: \"latitude\"})\n\nlongitude = from(bucket: \"flood_predictions\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"longitude\")\n  |> group(columns: [\"location_id\"])\n  |> last()\n  |> drop(columns: [\"_start\", \"_stop\", \"_time\", \"_measurement\", \"_field\"])\n  |> rename(columns: {_value: \"longitude\"})\n\nalert = from(bucket: \"flood_predictions\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"alert_level_num\")\n  |> group(columns: [\"location_id\"])\n  |> last()\n  |> toFloat()\n  |> drop(columns: [\"_start\", \"_stop\", \"_time\", \"_measurement\", \"_field\"])\n  |> rename(columns: {_value: \"alert_level_num\"})\n\njoin.inner(\n  left: latitude,\n  right: longitude,\n  on: (l, r) => l.location_id == r.location_id,\n  as: (l, r) => ({l with longitude: r.longitude})\n)\n  |> join.inner(\n    right: alert,\n    on: (l, r) => l.location_id == r.location_id,\n    as: (l, r) => ({l with alert_level_num: r.alert_level_num})\n  )",
+          "refId": "A"
+        }
+      ],
+      "title": "🗺️ Carte des Alertes en Temps Réel - Maroc",
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"flood_predictions\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"prediction\")\n  |> count()",
+          "refId": "A"
+        }
+      ],
+      "title": "📊 Total Prédictions (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "orange",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"flood_predictions\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"probability\")\n  |> mean()",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Probabilité Moyenne",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"flood_predictions\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"extreme_event\")\n  |> last()\n  |> filter(fn: (r) => int(v: r._value) == 1)\n  |> group()\n  |> count()",
+          "refId": "A"
+        }
+      ],
+      "title": "⚡ Événements Extrêmes (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "orange",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"flood_predictions\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"probability\")\n  |> group(columns: [\"location_id\", \"location_name\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Probabilité de Crue en Temps Réel",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "🟢 LOW"
+                },
+                "2": {
+                  "color": "yellow",
+                  "index": 1,
+                  "text": "🟡 MODERATE"
+                },
+                "3": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "🟠 HIGH"
+                },
+                "4": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "🔴 CRITICAL"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 7,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"flood_predictions\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._measurement == \"flood_prediction\")\n  |> filter(fn: (r) => r._field == \"alert_level_num\")\n  |> last()\n  |> group(columns: [\"alert_level\"])\n  |> count()",
+          "refId": "A"
+        }
+      ],
+      "title": "🎯 Distribution des Niveaux d'Alerte (24h)",
+      "type": "piechart"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "flood",
+    "morocco",
+    "ml",
+    "real-time",
+    "alert"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "🌊 Monitoring des Crues - Maroc",
+  "uid": "flood-morocco",
+  "version": 0,
+  "weekStart": ""
+}

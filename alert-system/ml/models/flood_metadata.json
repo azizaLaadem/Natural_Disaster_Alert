@@ -1,0 +1,43 @@
+{
+    "model_type": "RandomForest",
+    "disaster_type": "flood",
+    "features": [
+        "rainfall_mm",
+        "water_level_m",
+        "river_discharge",
+        "elevation_m",
+        "historical_floods",
+        "rain_water_interaction",
+        "discharge_per_rain",
+        "flood_risk_index",
+        "extreme_event"
+    ],
+    "feature_count": 9,
+    "model_params": {
+        "numTrees": 200,
+        "maxDepth": 20,
+        "minInstancesPerNode": 2,
+        "maxBins": 64,
+        "featureSubsetStrategy": "sqrt",
+        "subsamplingRate": 0.8,
+        "seed": 42
+    },
+    "metrics": {
+        "validation": {
+            "auc": 0.7993034636794477,
+            "accuracy": 0.8524240809802877,
+            "precision": 0.8407969711108689,
+            "recall": 0.8524240809802877,
+            "f1": 0.8440308381618653
+        },
+        "test": {
+            "auc": 0.8065969626123201,
+            "accuracy": 0.85,
+            "precision": 0.8383739852474111,
+            "recall": 0.85,
+            "f1": 0.8416466102272522
+        }
+    },
+    "training_date": "2025-12-17 13:31:43",
+    "model_path": "C:\\Users\\laade\\Natural_Disaster_Alert\\alert-system\\ml/models\\flood_model"
+}

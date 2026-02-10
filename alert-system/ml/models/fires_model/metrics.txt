@@ -1,0 +1,10 @@
+Model: Random Forest
+Training Date: 2025-12-22 14:18:08
+Total Samples: 163692
+Train Samples: 131099
+Test Samples: 32593
+Features: 167
+Accuracy: 0.6271
+F1-Score: 0.6232
+Precision: 0.6301
+Recall: 0.6271
